@@ -232,6 +232,7 @@
 
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary">Create Article</button>
+                                <button type="button" class="btn btn-info" onclick="previewArticle()">Preview</button>
                                 <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
                             </div>
                     </form>
@@ -359,13 +360,16 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Placement</label>
+                                <label>Ad Size & Placement</label>
                                 <select id="ad_placement">
-                                    <option value="header">Header (728x90)</option>
-                                    <option value="sidebar">Sidebar (300x250)</option>
-                                    <option value="content_top">Content Top</option>
-                                    <option value="content_bottom">Content Bottom</option>
-                                    <option value="footer">Footer</option>
+                                    <option value="leaderboard">Leaderboard (728 × 90 px)</option>
+                                    <option value="large_rectangle">Large Rectangle (336 × 280 px)</option>
+                                    <option value="medium_rectangle">Medium Rectangle (300 × 250 px)</option>
+                                    <option value="wide_skyscraper">Wide Skyscraper (160 × 600 px)</option>
+                                    <option value="skyscraper">Skyscraper (120 × 600 px)</option>
+                                    <option value="button1">Button 1 (120 × 90 px)</option>
+                                    <option value="button2">Button 2 (120 × 60 px)</option>
+                                    <option value="microbar">Microbar (88 × 31 px)</option>
                                 </select>
                             </div>
                             <div class="form-group">

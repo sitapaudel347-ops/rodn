@@ -274,15 +274,53 @@ async function createAd() {
     const placement = document.getElementById('ad_placement').value;
     const start_date = document.getElementById('ad_start').value;
     const end_date = document.getElementById('ad_end').value;
-    const scheduled_publish_at = document.getElementById('scheduled_publish_at').value || null;
 
-    await fetch(`${API_BASE}/ads`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-        body: JSON.stringify({ title, image_url, link_url, placement, width: 300, height: 250, start_date, end_date, scheduled_publish_at })
-    });
-    hideAddAdForm();
-    loadAds();
+    if (!title || !image_url || !link_url) {
+        alert('Title, Image URL, and Link URL are required');
+        return;
+    }
+
+    // Map ad sizes to dimensions
+    const adSizes = {
+        'leaderboard': { width: 728, height: 90 },
+        'large_rectangle': { width: 336, height: 280 },
+        'medium_rectangle': { width: 300, height: 250 },
+        'wide_skyscraper': { width: 160, height: 600 },
+        'skyscraper': { width: 120, height: 600 },
+        'button1': { width: 120, height: 90 },
+        'button2': { width: 120, height: 60 },
+        'microbar': { width: 88, height: 31 }
+    };
+
+    const size = adSizes[placement] || { width: 300, height: 250 };
+
+    try {
+        const response = await fetch(`${API_BASE}/ads`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            body: JSON.stringify({
+                title,
+                image_url,
+                link_url,
+                placement,
+                width: size.width,
+                height: size.height,
+                start_date: start_date || null,
+                end_date: end_date || null
+            })
+        });
+
+        if (response.ok) {
+            alert('Ad created successfully!');
+            hideAddAdForm();
+            loadAds();
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        alert('Network error. Please try again.');
+    }
 }
 
 async function deleteAd(id) {
@@ -862,3 +900,97 @@ function resetForm() {
     document.querySelector('#section-create-article h2').textContent = 'Create New Article';
     document.querySelector('#createArticleForm button[type="submit"]').textContent = 'Create Article';
 }
+
+// Delete Article
+async function deleteArticle(id) {
+    if (!confirm('Are you sure you want to delete this article?')) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/articles/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (response.ok) {
+            alert('Article deleted successfully');
+            loadAllArticles();
+            loadRecentArticles();
+            loadDashboardStats();
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        alert('Error deleting article');
+    }
+}
+
+// Approve Article
+async function approveArticle(id) {
+    if (!confirm('Approve this article for publication?')) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/articles/${id}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ status: 'published' })
+        });
+
+        if (response.ok) {
+            alert('Article approved and published!');
+            loadAllArticles();
+            loadRecentArticles();
+            loadDashboardStats();
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        alert('Error approving article');
+    }
+}
+
+// Generate Slug
+function generateSlug(text) {
+    return text
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+}
+
+// Preview Article
+function previewArticle() {
+    const headline = document.getElementById('headline').value;
+    const body = document.getElementById('body').innerHTML;
+    const summary = document.getElementById('summary').value;
+
+    const previewWindow = window.open('', 'Article Preview', 'width=800,height=600');
+    previewWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Preview: ${headline}</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; }
+                h1 { color: #D32F2F; }
+                .summary { font-style: italic; color: #666; margin: 20px 0; }
+                .body { line-height: 1.6; }
+            </style>
+        </head>
+        <body>
+            <h1>${headline}</h1>
+            <div class="summary">${summary}</div>
+            <div class="body">${body}</div>
+        </body>
+        </html>
+    `);
+    previewWindow.document.close();
+}
+

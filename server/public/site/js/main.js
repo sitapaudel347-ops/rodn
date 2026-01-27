@@ -79,24 +79,39 @@ async function loadNewsTicker() {
     try {
         const response = await fetch(`${API_BASE}/settings/public`);
         const data = await response.json();
-        const tickerEnabled = data.settings?.find(s => s.key === 'ticker_enabled')?.value === 'true';
 
-        if (!tickerEnabled) { document.getElementById('newsTicker').style.display = 'none'; return; }
+        const tickerEnabledSetting = data.settings?.find(s => s.key === 'ticker_enabled');
+        const tickerEnabled = tickerEnabledSetting?.value === 'true' || tickerEnabledSetting?.value === true;
+
+        console.log('Ticker enabled:', tickerEnabled, 'Raw value:', tickerEnabledSetting?.value);
+
+        if (!tickerEnabled) {
+            document.getElementById('newsTicker').style.display = 'none';
+            return;
+        }
+
+        // Show ticker
+        document.getElementById('newsTicker').style.display = 'block';
 
         const tickerText = data.settings?.find(s => s.key === 'ticker_text')?.value;
         let items = [];
-        if (tickerText) {
-            items = tickerText.split('|');
+        if (tickerText && tickerText.trim()) {
+            items = tickerText.split('|').map(item => item.trim()).filter(item => item);
         } else {
+            // Fallback to latest articles
             const artRes = await fetch(`${API_BASE}/articles?limit=5`);
             const artData = await artRes.json();
             items = artData.articles.map(a => a.headline);
         }
 
-        const html = items.map(item => `<span class="ticker-item">${item}</span>`).join('');
-        document.getElementById('tickerItems').innerHTML = html + html;
+        if (items.length > 0) {
+            const html = items.map(item => `<span class="ticker-item">${item}</span>`).join('');
+            document.getElementById('tickerItems').innerHTML = html + html;
+        }
 
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.error('Ticker error:', e);
+    }
 }
 
 // Ads

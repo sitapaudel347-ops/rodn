@@ -829,23 +829,53 @@ window.updateSetting = async function (key) {
 // Rich Text Editor Functions - Exposed to Window
 let editingArticleId = null;
 
-// Rich Text Editor Functions
+// Rich Text Editor Functions - FIXED VERSION
 window.formatText = function (command, value = null) {
-    document.execCommand(command, false, value);
-    document.getElementById('body').focus();
+    const editor = document.getElementById('body');
+    if (!editor) {
+        console.error('Editor not found');
+        return;
+    }
+
+    // Focus editor BEFORE execCommand
+    editor.focus();
+
+    // Execute command
+    const success = document.execCommand(command, false, value);
+
+    if (!success) {
+        console.warn('execCommand failed for:', command);
+    }
+
+    // Keep focus
+    editor.focus();
 };
 
 window.insertLink = function () {
+    const editor = document.getElementById('body');
+    if (!editor) return;
+
+    // Focus first
+    editor.focus();
+
     const url = prompt('Enter URL:', 'https://');
-    if (url) {
+    if (url && url.trim()) {
         document.execCommand('createLink', false, url);
+        editor.focus();
     }
 };
 
 window.insertImage = function () {
+    const editor = document.getElementById('body');
+    if (!editor) return;
+
+    // Focus first
+    editor.focus();
+
     const url = prompt('Enter Image URL:', 'https://');
-    if (url) {
+    if (url && url.trim()) {
         document.execCommand('insertImage', false, url);
+        editor.focus();
     }
 };
 

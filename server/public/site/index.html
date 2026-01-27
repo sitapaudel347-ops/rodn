@@ -4,14 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Routine of Dhulikhel Banda - News Portal</title>
+    <title>Routine of Dhulikhel Banda</title>
     <link rel="icon" type="image/png" href="/public/fablo/favicon.ico">
     <link rel="stylesheet" href="/public/site/css/main.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Mukta:wght@300;400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
         rel="stylesheet">
     <style>
-        /* Google Translate Hiding/Styling */
         .goog-te-banner-frame {
             display: none !important;
         }
@@ -29,7 +28,6 @@
 
 <body>
 
-    <!-- Top Bar -->
     <div class="top-bar">
         <div class="container">
             <div class="date-display" id="dateDisplay"></div>
@@ -40,147 +38,108 @@
         </div>
     </div>
 
-    <!-- Header & Ad -->
-    <header class="main-header" id="mainHeader">
+    <header class="main-header">
         <div class="container header-grid">
-            <div class="logo-container">
+            <div class="logo-area">
+                <button class="menu-toggle" onclick="toggleMenu()">☰</button>
                 <a href="/" class="logo-link">
-                    <img src="/public/fablo/logo.png" alt="RODB Logo" class="logo-img">
+                    <img src="/public/fablo/logo.png" alt="RODB" class="logo-img">
                     <div class="logo-text">
-                        <h1 class="site-title">Routine of Dhulikhel Banda</h1>
-                        <p class="site-subtitle">सत्य, तथ्य र निष्पक्ष समाचार</p>
+                        <h1>RODB</h1>
                     </div>
                 </a>
             </div>
-            <div class="header-ad" id="ad_header">
-                <!-- Ad Slot: Header -->
-            </div>
+            <div class="header-ad" id="ad_header"></div>
         </div>
     </header>
 
-    <!-- Navigation -->
-    <nav class="main-nav">
+    <nav class="main-nav" id="mainNav">
         <div class="container">
-            <ul class="nav-list" id="dynamicNav">
-                <!-- Dynamic Items -->
-            </ul>
-            <div class="search-trigger">
-                <input type="text" id="searchInput" placeholder="समाचार खोज्नुहोस्...">
-                <button class="icon-search" onclick="performSearch()">🔍</button>
+            <ul class="nav-links" id="dynamicNav"></ul>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search...">
             </div>
         </div>
     </nav>
 
-    <!-- Breaking News Ticker -->
+    <div class="mobile-menu" id="mobileMenu">
+        <ul id="mobileNavList"></ul>
+    </div>
+
     <div class="ticker-wrap" id="newsTicker">
         <div class="container">
-            <div class="ticker-label">ताजा अपडेट</div>
+            <div class="ticker-label">Updates</div>
             <div class="ticker-content">
-                <div class="ticker-items" id="tickerItems">
-                    <!-- Dynamic Ticker -->
-                </div>
+                <div class="ticker-items" id="tickerItems"></div>
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <main class="main-content container">
+    <main class="main-container container">
+        <div class="news-grid-layout">
 
-        <!-- Breaking News Banner if any -->
-        <div id="breakingBanner"></div>
-
-        <!-- Ad Slot: Content Top -->
-        <div class="ad-slot my-4" id="ad_content_top"></div>
-
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <div class="hero-grid" id="heroSection">
-                <!-- Main Featured Story will load here -->
-            </div>
-        </section>
-
-        <div class="content-layout">
-            <!-- Left Column: Articles -->
-            <div class="primary-col">
-
-                <section class="latest-news">
-                    <div class="section-header">
-                        <h2>मुख्य समाचार</h2>
-                        <span class="line"></span>
-                    </div>
-                    <div class="articles-grid" id="latestArticles">
-                        <!-- Articles load here -->
-                    </div>
-                    <button class="load-more-btn" id="loadMore">थप समाचार हेर्नुहोस्</button>
-                </section>
-
-                <!-- Ad Slot: Content Bottom -->
-                <div class="ad-slot my-4" id="ad_content_bottom"></div>
-
-                <!-- Categories Sections -->
-                <div id="categorySections">
-                    <!-- Dynamic Category Blocks -->
+            <!-- Left Column: Featured Headlines -->
+            <aside class="col-left">
+                <div class="section-title">
+                    <h3>News Feed</h3>
                 </div>
-
-            </div>
-
-            <!-- Right Column: Sidebar -->
-            <aside class="sidebar-col">
-
-                <div class="ad-slot sidebar-ad" id="ad_sidebar"></div>
-
-                <div class="sidebar-widget">
-                    <h3>चर्चित समाचार</h3>
-                    <div class="trending-list" id="trendingList">
-                        <!-- Trending -->
-                    </div>
+                <div id="leftHeadlines" class="headline-list">
+                    <!-- Headliness + Links -->
                 </div>
-
-                <div class="sidebar-widget">
-                    <h3>हाम्रो बारेमा</h3>
-                    <p>Routine of Dhulikhel Banda (RODB) धुलिखेल र आसपासका क्षेत्रको प्रमुख समाचार पोर्टल हो। हामी सत्य
-                        र तथ्यमा आधारित समाचार सम्प्रेषण गर्छौं।</p>
-                    <div class="social-links">
-                        <a href="#" class="social-icon">FB</a>
-                        <a href="https://twitter.com/rodb_official" class="social-icon">TW</a>
-                        <a href="https://www.youtube.com/@RoutineOfDhulikhelBanda" class="social-icon">YT</a>
-                    </div>
-                </div>
-
+                <div class="ad-slot" id="ad_left"></div>
             </aside>
-        </div>
 
-    </main>
-
-    <!-- Footer -->
-    <footer class="main-footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <img src="/public/fablo/logo-dark.png" alt="RODB" class="footer-logo">
-                    <p>सत्य, तथ्य र निष्पक्ष समाचारको बाहक</p>
-                    <p>Established: July 15, 2022</p>
-                    <p>Address: Dhulikhel, Nepal</p>
+            <!-- Middle Column: Main Feed -->
+            <div class="col-middle">
+                <div id="styles-social-feed" class="social-feed">
+                    <!-- Articles load here -->
                 </div>
-                <div class="footer-col">
-                    <h3>महत्वपूर्ण लिंक</h3>
-                    <ul class="footer-links" id="footerNav">
-                        <!-- Footer Nav -->
+                <button id="loadMore" class="load-more">Load More</button>
+            </div>
+
+            <!-- Right Column: Hot News -->
+            <aside class="col-right">
+                <div class="section-title">
+                    <h3>Hot News</h3>
+                </div>
+                <div class="hot-news-wrapper">
+                    <ul id="hotNewsList" class="hot-news-bullets">
+                        <!-- Bullets -->
                     </ul>
                 </div>
-                <div class="footer-col">
-                    <h3>सम्पर्क</h3>
-                    <p>Email: rodb.dhulikhel@gmail.com</p>
-                    <p>Phone: +977-9800000000</p>
+                <div class="ad-slot" id="ad_right"></div>
+
+                <div class="trending-widget">
+                    <h3>Trending</h3>
+                    <div id="trendingList"></div>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="/public/fablo/logo-dark.png" alt="RODB Logo">
+                    <p>Routine of Dhulikhel Banda</p>
+                </div>
+                <div class="footer-links-col">
+                    <h4>Navigate</h4>
+                    <ul id="footerNav"></ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contact</h4>
+                    <p>rodb.dhulikhel@gmail.com</p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 Routine of Dhulikhel Banda. All Rights Reserved.</p>
+                &copy; 2026 RODB. All rights reserved.
             </div>
         </div>
     </footer>
 
-    <!-- Google Translate Script -->
     <script type="text/javascript">
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({
@@ -193,7 +152,6 @@
     </script>
     <script type="text/javascript"
         src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
     <script src="/public/site/js/main.js"></script>
 </body>
 

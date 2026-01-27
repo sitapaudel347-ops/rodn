@@ -11,12 +11,24 @@ document.addEventListener('DOMContentLoaded', () => {
     loadNavigation();
     loadNewsTicker();
     loadAds();
-    loadHeroSection();
-    loadLatestArticles();
-    loadTrending();
+
+    // Content Loading
+    loadFeedArticles(); // Middle
+    loadFeaturedHeadlines(); // Left
+    loadHotNews(); // Right
+    loadTrending(); // Right Widget
 });
 
-// Theme Management
+function toggleMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (mobileMenu.style.display === 'block') {
+        mobileMenu.style.display = 'none';
+    } else {
+        mobileMenu.style.display = 'block';
+    }
+}
+
+// Theme
 function initTheme() {
     const toggle = document.getElementById('themeToggle');
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -32,13 +44,13 @@ function initTheme() {
     });
 }
 
-// Date Display (Nepali Date could be added here later with a library)
+// Date
 function loadDate() {
     const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('ne-NP', dateOptions);
 }
 
-// Load Navigation
+// Navigation
 async function loadNavigation() {
     try {
         const response = await fetch(`${API_BASE}/navigation`);
@@ -46,50 +58,48 @@ async function loadNavigation() {
 
         const nav = document.getElementById('dynamicNav');
         const footerNav = document.getElementById('footerNav');
+        const mobileNav = document.getElementById('mobileNavList');
 
-        const html = data.items.map(item =>
-            `<li class="nav-item"><a href="${item.url}">${item.label}</a></li>`
-        ).join('');
+        const createLink = (item) => `<li><a href="${item.url}">${item.label}</a></li>`;
 
-        nav.innerHTML = `<li class="nav-item"><a href="/">गृहपृष्ठ</a></li>` + html;
+        const html = data.items.map(createLink).join('');
+        const homeLink = `<li><a href="/">Home</a></li>`;
+
+        nav.innerHTML = homeLink + html;
         footerNav.innerHTML = html;
+        mobileNav.innerHTML = homeLink + html;
 
     } catch (e) {
-        console.error('Nav load error', e);
+        console.error('Nav error', e);
     }
 }
 
-// Load Ticker
+// Ticker
 async function loadNewsTicker() {
     try {
         const response = await fetch(`${API_BASE}/settings/public`);
         const data = await response.json();
-
-        // Ticker logic from settings or articles
         const tickerEnabled = data.settings?.find(s => s.key === 'ticker_enabled')?.value === 'true';
+
         if (!tickerEnabled) { document.getElementById('newsTicker').style.display = 'none'; return; }
 
         const tickerText = data.settings?.find(s => s.key === 'ticker_text')?.value;
         let items = [];
-
         if (tickerText) {
             items = tickerText.split('|');
         } else {
-            // Fallback to articles
             const artRes = await fetch(`${API_BASE}/articles?limit=5`);
             const artData = await artRes.json();
             items = artData.articles.map(a => a.headline);
         }
 
         const html = items.map(item => `<span class="ticker-item">${item}</span>`).join('');
-        document.getElementById('tickerItems').innerHTML = html + html; // Duplicate for loop
+        document.getElementById('tickerItems').innerHTML = html + html;
 
-    } catch (e) {
-        console.error('Ticker error', e);
-    }
+    } catch (e) { console.error(e); }
 }
 
-// Load Ads
+// Ads
 async function loadAds() {
     try {
         const response = await fetch(`${API_BASE}/ads`);
@@ -97,106 +107,101 @@ async function loadAds() {
 
         const placements = {
             'header': 'ad_header',
-            'sidebar': 'ad_sidebar',
-            'content_top': 'ad_content_top',
-            'content_bottom': 'ad_content_bottom'
+            'content_top': 'ad_left', // Reuse for left
+            'content_bottom': 'ad_right' // Reuse for right
         };
 
-        // Group by placement and pick random
-        const adsByPlacement = {};
         data.ads.forEach(ad => {
-            if (!adsByPlacement[ad.placement]) adsByPlacement[ad.placement] = [];
-            adsByPlacement[ad.placement].push(ad);
-        });
-
-        Object.keys(placements).forEach(key => {
-            if (adsByPlacement[key] && adsByPlacement[key].length > 0) {
-                const ads = adsByPlacement[key];
-                const ad = ads[Math.floor(Math.random() * ads.length)]; // Random rotation
-                const container = document.getElementById(placements[key]);
-
-                if (container) {
-                    container.innerHTML = `
-                        <a href="${ad.link_url}" target="_blank" onclick="trackClick(${ad.id})">
-                            <img src="${ad.image_url}" alt="${ad.title}">
-                        </a>
-                    `;
-                    // Track impression
-                    fetch(`${API_BASE}/ads/${ad.id}/impression`, { method: 'POST' });
-                }
+            // Logic to place ads... simplified for now
+            if (ad.placement === 'header') {
+                document.getElementById('ad_header').innerHTML = `<a href="${ad.link_url}"><img src="${ad.image_url}"></a>`;
             }
         });
 
-    } catch (e) {
-        console.error('Ads error', e);
-    }
+    } catch (e) { console.error('Ads error', e); }
 }
 
-function trackClick(id) {
-    fetch(`${API_BASE}/ads/${id}/click`, { method: 'POST' });
-}
-
-// Load Hero
-async function loadHeroSection() {
-    try {
-        const response = await fetch(`${API_BASE}/articles?featured=true&limit=1`);
-        const data = await response.json();
-        const hero = document.getElementById('heroSection');
-
-        if (data.articles && data.articles.length > 0) {
-            const article = data.articles[0];
-            hero.innerHTML = `
-                <div class="hero-main">
-                    <a href="/article.html?slug=${article.slug}">
-                        <img src="${article.featured_image_url || '/public/fablo/logo.png'}" alt="${article.headline}">
-                        <div class="hero-content">
-                            <h2>${article.headline}</h2>
-                            <p>${article.summary || ''}</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="hero-list">
-                   <!-- Additional top news could go here -->
-                </div>
-            `;
-        }
-    } catch (e) { console.error(e); }
-}
-
-// Load Articles
-async function loadLatestArticles() {
+// Load Middle Feed (Social Style)
+async function loadFeedArticles() {
     try {
         const response = await fetch(`${API_BASE}/articles?limit=${pageSize}&offset=${currentPage * pageSize}`);
         const data = await response.json();
-        const grid = document.getElementById('latestArticles');
+        const container = document.getElementById('styles-social-feed');
 
         const html = data.articles.map(article => `
-            <div class="article-card">
-                <a href="/article.html?slug=${article.slug}" style="text-decoration:none; color:inherit;">
-                    <img src="${article.featured_image_url || '/public/fablo/logo.png'}" loading="lazy">
-                    <div class="article-content">
-                        <div class="article-meta">
-                            ${new Date(article.published_at).toLocaleDateString()} | ${article.category_name || 'News'}
-                        </div>
-                        <h3 class="article-title">${article.headline}</h3>
+            <article class="feed-card">
+                <!-- Image at Top -->
+                ${article.featured_image_url ?
+                `<img src="${article.featured_image_url}" alt="${article.headline}" loading="lazy">` :
+                ''}
+                
+                <div class="feed-content">
+                    <!-- Title -->
+                    <h2 class="feed-title">
+                        <a href="/article.html?slug=${article.slug}">${article.headline}</a>
+                    </h2>
+                    
+                    <!-- Meta -->
+                    <div class="feed-meta">
+                        ${new Date(article.published_at).toLocaleDateString()} • ${article.author_name || 'Admin'}
                     </div>
-                </a>
-            </div>
+                    
+                    <!-- Summary Below Title/Image -->
+                    <div class="feed-summary">
+                        ${article.summary || article.body.substring(0, 150) + '...'}
+                    </div>
+                </div>
+                
+                <!-- Action Link -->
+                <div class="feed-action">
+                    <a href="/article.html?slug=${article.slug}" class="read-more-btn">Read Full Article &rarr;</a>
+                </div>
+            </article>
         `).join('');
 
-        if (currentPage === 0) grid.innerHTML = html;
-        else grid.insertAdjacentHTML('beforeend', html);
+        if (currentPage === 0) container.innerHTML = html;
+        else container.insertAdjacentHTML('beforeend', html);
 
     } catch (e) { console.error(e); }
 }
 
 document.getElementById('loadMore').addEventListener('click', () => {
     currentPage++;
-    loadLatestArticles();
+    loadFeedArticles();
 });
 
-// Mock Trending
+// Load Left Headlines (Featured)
+async function loadFeaturedHeadlines() {
+    try {
+        const response = await fetch(`${API_BASE}/articles?featured=true&limit=10`);
+        const data = await response.json();
+        const container = document.getElementById('leftHeadlines');
+
+        container.innerHTML = data.articles.map(article => `
+            <div class="headline-item">
+                <a href="/article.html?slug=${article.slug}">${article.headline}</a>
+            </div>
+        `).join('');
+    } catch (e) { console.error(e); }
+}
+
+// Load Right Hot News (Bullets)
+async function loadHotNews() {
+    try {
+        const response = await fetch(`${API_BASE}/articles?breaking=true&limit=10`);
+        const data = await response.json();
+        const container = document.getElementById('hotNewsList');
+
+        container.innerHTML = data.articles.map(article => `
+            <li>
+                <a href="/article.html?slug=${article.slug}">${article.headline}</a>
+            </li>
+        `).join('');
+    } catch (e) { console.error(e); }
+}
+
+// Trending
 function loadTrending() {
-    // In real app, fetch from API
     // Placeholder
+    document.getElementById('trendingList').innerHTML = '<p>Top stories trending now...</p>';
 }

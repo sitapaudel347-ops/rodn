@@ -365,12 +365,16 @@ function hideAddCategoryForm() {
 
 async function createCategory() {
     const name = document.getElementById('cat_name').value;
-    const slug = document.getElementById('cat_slug').value;
+    let slug = document.getElementById('cat_slug').value;
     const description = document.getElementById('cat_description').value;
 
-    if (!name || !slug) {
-        alert('Name and slug are required');
+    if (!name) {
+        alert('Category name is required');
         return;
+    }
+
+    if (!slug) {
+        slug = generateSlug(name);
     }
 
     try {
@@ -590,6 +594,9 @@ function initCreateArticleForm() {
     // Load categories for dropdown
     loadCategoriesForForm();
 
+    // Ensure button text is reset when form is shown
+    document.querySelector('#createArticleForm button[type="submit"]').textContent = editingArticleId ? 'Update Article' : 'Create Article';
+
     // Handle form submission
     form.onsubmit = async (e) => {
         e.preventDefault();
@@ -599,18 +606,25 @@ function initCreateArticleForm() {
             headline: formData.get('headline'),
             sub_headline: formData.get('sub_headline'),
             summary: formData.get('summary'),
-            body: formData.get('body'),
-            slug: generateSlug(formData.get('headline')),
+            body: document.getElementById('body').innerHTML, // Read from contenteditable
             category_id: formData.get('category_id') || null,
             status: formData.get('status'),
             featured_image_url: formData.get('featured_image_url'),
-            is_breaking: formData.get('is_breaking') ? 1 : 0,
-            is_featured: formData.get('is_featured') ? 1 : 0,
+            scheduled_publish_at: formData.get('scheduled_publish_at') || null,
+            is_breaking: document.getElementById('is_breaking').checked ? 1 : 0,
+            is_featured: document.getElementById('is_featured').checked ? 1 : 0,
         };
 
+        if (!articleData.slug && !editingArticleId) {
+            articleData.slug = generateSlug(articleData.headline);
+        }
+
         try {
-            const response = await fetch(`${API_BASE}/articles`, {
-                method: 'POST',
+            const url = editingArticleId ? `${API_BASE}/articles/${editingArticleId}` : `${API_BASE}/articles`;
+            const method = editingArticleId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
@@ -619,9 +633,11 @@ function initCreateArticleForm() {
             });
 
             if (response.ok) {
-                alert('Article created successfully!');
-                form.reset();
+                alert(editingArticleId ? 'Article updated successfully!' : 'Article created successfully!');
+                resetForm();
                 loadDashboardStats();
+                showSection('articles');
+                loadAllArticles();
             } else {
                 const error = await response.json();
                 alert('Error: ' + error.error);
@@ -773,63 +789,76 @@ window.updateSetting = async function (key) {
 };
 
 // Rich Text Editor Functions - Exposed to Window
-window.formatText = function (command) {
-    const textarea = document.getElementById('body');
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-    const fullText = textarea.value;
+let editingArticleId = null;
 
-    // If no text selected, we can still insert tags at cursor
-
-    let replacement = '';
-
-    switch (command) {
-        case 'bold':
-            replacement = `<strong>${selectedText}</strong>`;
-            break;
-        case 'italic':
-            replacement = `<em>${selectedText}</em>`;
-            break;
-        case 'underline':
-            replacement = `<u>${selectedText}</u>`;
-            break;
-        case 'h2':
-            replacement = `\n<h2>${selectedText || 'Heading 2'}</h2>\n`;
-            break;
-        case 'h3':
-            replacement = `\n<h3>${selectedText || 'Heading 3'}</h3>\n`;
-            break;
-        case 'ul':
-            const ulItems = selectedText ? selectedText.split('\n') : ['List item'];
-            replacement = `\n<ul>\n${ulItems.map(i => `  <li>${i}</li>`).join('\n')}\n</ul>\n`;
-            break;
-        case 'ol':
-            const olItems = selectedText ? selectedText.split('\n') : ['List item'];
-            replacement = `\n<ol>\n${olItems.map(i => `  <li>${i}</li>`).join('\n')}\n</ol>\n`;
-            break;
-    }
-
-    textarea.value = fullText.substring(0, start) + replacement + fullText.substring(end);
-
-    // Restore focus
-    textarea.focus();
+// Rich Text Editor Functions
+window.formatText = function (command, value = null) {
+    document.execCommand(command, false, value);
+    document.getElementById('body').focus();
 };
 
 window.insertLink = function () {
-    const textarea = document.getElementById('body');
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-
     const url = prompt('Enter URL:', 'https://');
-    if (!url) return;
-
-    const text = selectedText || prompt('Link Text:', 'Click Here');
-    const replacement = `<a href="${url}">${text}</a>`;
-
-    textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
-    textarea.focus();
+    if (url) {
+        document.execCommand('createLink', false, url);
+    }
 };
 
-// ... existing code ...
+window.insertImage = function () {
+    const url = prompt('Enter Image URL:', 'https://');
+    if (url) {
+        document.execCommand('insertImage', false, url);
+    }
+};
+
+// Edit Article
+window.editArticle = async function (id) {
+    try {
+        const response = await fetch(`${API_BASE}/articles/${id}`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            const article = data.article;
+            editingArticleId = article.id;
+
+            // Switch to form
+            showSection('create-article');
+            document.querySelector('#section-create-article h2').textContent = 'Edit Article';
+
+            // Populate form
+            document.getElementById('headline').value = article.headline;
+            document.getElementById('sub_headline').value = article.sub_headline || '';
+            document.getElementById('summary').value = article.summary || '';
+            document.getElementById('category_id').value = article.category_id || '';
+            document.getElementById('status').value = article.status;
+            document.getElementById('featured_image_url').value = article.featured_image_url || '';
+            document.getElementById('is_breaking').checked = article.is_breaking;
+            document.getElementById('is_featured').checked = article.is_featured;
+            document.getElementById('scheduled_publish_at').value = article.scheduled_publish_at ? new Date(article.scheduled_publish_at).toISOString().slice(0, 16) : '';
+
+            // Populate Editor
+            document.getElementById('body').innerHTML = article.body;
+
+            // Change submit button text
+            const btn = document.querySelector('#createArticleForm button[type="submit"]');
+            btn.textContent = 'Update Article';
+            btn.onclick = (e) => {
+                // Ensure the form submit handler uses this context or logic
+                // Actually initCreateArticleForm handles onsubmit. We need to handle the state there.
+            };
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error loading article');
+    }
+};
+
+function resetForm() {
+    document.getElementById('createArticleForm').reset();
+    document.getElementById('body').innerHTML = '';
+    editingArticleId = null;
+    document.querySelector('#section-create-article h2').textContent = 'Create New Article';
+    document.querySelector('#createArticleForm button[type="submit"]').textContent = 'Create Article';
+}

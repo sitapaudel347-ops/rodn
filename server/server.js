@@ -155,6 +155,93 @@ async function seedDefaultData() {
         );
     }
     logger.info('✓ Organization settings created');
+
+    // Create sample articles to bootstrap the site
+    try {
+        const localCategory = await database.get('SELECT id FROM categories WHERE slug = ?', ['local-news']);
+        const adminUser = await database.get('SELECT id FROM users WHERE username = ?', ['admin']);
+        
+        if (localCategory && adminUser) {
+            const sampleArticles = [
+                {
+                    headline: 'दोलखामा नयाँ सड़क परियोजना शुरु',
+                    sub_headline: 'स्थानीय विकास कार्य तेज हुँदैछ',
+                    summary: 'दोलखा जिल्लामा नयाँ सड़क परियोजना सुरु भएको छ। यो परियोजनाले क्षेत्रमा परिवहन सेवा सुधार गर्नेछ।',
+                    body: 'दोलखा जिल्लामा नयाँ सड़क परियोजना सुरु भएको छ। यो परियोजनाले क्षेत्रमा परिवहन सेवा सुधार गर्नेछ र स्थानीय अर्थनीति विकसित हुनेछ।',
+                    slug: 'naya-sadak-pariyojana-doalkha',
+                    category_id: localCategory.id,
+                    author_id: adminUser.id,
+                    status: 'published',
+                    is_featured: 0,
+                    is_breaking: 1,
+                },
+                {
+                    headline: 'दोलखामा स्वास्थ्य सेवा केन्द्र भर्सन हुँदै छ',
+                    sub_headline: 'स्थानीय स्वास्थ्य सुविधा सुधार',
+                    summary: 'दोलखा जिल्लामा नयाँ स्वास्थ्य सेवा केन्द्र स्थापन गरिन् जसले क्षेत्रीय स्वास्थ्य सेवा अनुकूल बनाउनेछ।',
+                    body: 'दोलखा जिल्लामा नयाँ स्वास्थ्य सेवा केन्द्र स्थापन गरिएको छ। यो केन्द्रले स्थानीय जनताको स्वास्थ्य सेवा प्रदान गर्नेछ।',
+                    slug: 'swasthya-sewa-kendra-doalkha',
+                    category_id: localCategory.id,
+                    author_id: adminUser.id,
+                    status: 'published',
+                    is_featured: 1,
+                },
+                {
+                    headline: 'बजार में नयाँ व्यापार केन्द्र खोलिएको',
+                    sub_headline: 'व्यापार गतिविधि बृद्धि हुँदैछ',
+                    summary: 'दोलखा जिल्लामा नयाँ व्यापार केन्द्र खोलिएको छ जसले स्थानीय अर्थनीति मजबुत गर्नेछ।',
+                    body: 'दोलखा जिल्लामा नयाँ व्यापार केन्द्र खोलिएको छ। यो केन्द्रले छोटो व्यवसायीहरुलाई आवश्यक सहयोग प्रदान गर्नेछ।',
+                    slug: 'vyapar-kendra-khola',
+                    category_id: localCategory.id,
+                    author_id: adminUser.id,
+                    status: 'published',
+                    is_featured: 0,
+                },
+                {
+                    headline: 'शिक्षा क्षेत्रमा नयाँ पहल भएको',
+                    sub_headline: 'शिक्षा गुणस्तर सुधार',
+                    summary: 'दोलखामा शिक्षा गुणस्तर सुधारका लागि नयाँ पहल भएको छ।',
+                    body: 'दोलखामा शिक्षा गुणस्तर सुधारका लागि नयाँ पहल भएको छ। यो पहलले विद्यार्थीहरुको शिक्षा स्तर सुधार गर्नेछ।',
+                    slug: 'shiksha-gun-sudhaar',
+                    category_id: localCategory.id,
+                    author_id: adminUser.id,
+                    status: 'published',
+                    is_featured: 0,
+                },
+                {
+                    headline: 'सांस्कृतिक कार्यक्रम सफलतासाथ सम्पन्न',
+                    sub_headline: 'स्थानीय संस्कृति प्रदर्शन',
+                    summary: 'दोलखामा आयोजित सांस्कृतिक कार्यक्रम सफलतासाथ सम्पन्न भएको छ।',
+                    body: 'दोलखामा आयोजित सांस्कृतिक कार्यक्रम सफलतासाथ सम्पन्न भएको छ। यो कार्यक्रमले स्थानीय संस्कृति र परम्परा प्रदर्शन गरेको छ।',
+                    slug: 'sanskritik-karyakram',
+                    category_id: localCategory.id,
+                    author_id: adminUser.id,
+                    status: 'published',
+                    is_featured: 0,
+                },
+            ];
+
+            for (const article of sampleArticles) {
+                const wordCount = article.body.split(/\s+/).length;
+                const reading_time = Math.ceil(wordCount / 200);
+                
+                await database.run(
+                    `INSERT INTO articles (
+                        headline, sub_headline, summary, body, slug,
+                        category_id, author_id, language, status, is_featured, is_breaking, reading_time
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        article.headline, article.sub_headline, article.summary, article.body, article.slug,
+                        article.category_id, article.author_id, 'ne', article.status, article.is_featured || 0, article.is_breaking || 0, reading_time
+                    ]
+                );
+            }
+            logger.info('✓ Sample articles created');
+        }
+    } catch (articleError) {
+        logger.warn('Could not seed sample articles (may already exist):', articleError.message);
+    }
+
     logger.info('✓ Default data seeded successfully');
 }
 

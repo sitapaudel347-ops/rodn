@@ -49,7 +49,9 @@ class TursoDatabase {
                 args: params,
             });
 
-            return result.rows || [];
+            // Convert BigInt values to numbers for JSON serialization
+            const rows = (result.rows || []).map(row => this.convertBigInts(row));
+            return rows;
         } catch (error) {
             logger.error('Database all() error:', { sql, params, error: error.message });
             throw error;
@@ -68,7 +70,8 @@ class TursoDatabase {
                 args: params,
             });
 
-            return result.rows?.[0] || null;
+            const row = result.rows?.[0] || null;
+            return row ? this.convertBigInts(row) : null;
         } catch (error) {
             logger.error('Database get() error:', { sql, params, error: error.message });
             throw error;
@@ -88,7 +91,7 @@ class TursoDatabase {
             });
 
             return {
-                lastID: result.lastInsertRowid,
+                lastID: result.lastInsertRowid ? Number(result.lastInsertRowid) : null,
                 changes: result.rowsAffected,
             };
         } catch (error) {
@@ -107,6 +110,29 @@ class TursoDatabase {
             logger.error('Transaction error:', error.message);
             throw error;
         }
+    }
+
+    // Convert BigInt values to regular numbers for JSON serialization
+    convertBigInts(obj) {
+        if (obj === null || obj === undefined) return obj;
+        
+        if (typeof obj === 'bigint') {
+            return Number(obj);
+        }
+        
+        if (Array.isArray(obj)) {
+            return obj.map(item => this.convertBigInts(item));
+        }
+        
+        if (typeof obj === 'object') {
+            const converted = {};
+            for (const [key, value] of Object.entries(obj)) {
+                converted[key] = this.convertBigInts(value);
+            }
+            return converted;
+        }
+        
+        return obj;
     }
 
     // Close database connection

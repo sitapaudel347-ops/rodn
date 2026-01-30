@@ -410,7 +410,7 @@ async function loadInfoSettings() {
         const response = await fetch(`${API_BASE}/settings/public`);
         const data = await response.json();
 
-        const aboutText = data.settings?.find(s => s.key === 'about_content')?.value || data.settings?.find(s => s.key === 'about_info')?.value || 'Routine of Dhulikhel Banda';
+        const aboutText = data.settings?.find(s => s.key === 'about_content')?.value || data.settings?.find(s => s.key === 'about_info')?.value || 'Routine of Dhulikhel News';
         const contactText = data.settings?.find(s => s.key === 'contact_content')?.value || data.settings?.find(s => s.key === 'contact_info')?.value || 'rodb.dhulikhel@gmail.com';
 
         const mobileAbout = document.getElementById('mobileAbout');
@@ -702,11 +702,6 @@ async function loadFeedArticles() {
                         <div id="mobileTrendingList"></div>
                      </div>`;
 
-            // Inject Mobile Ad Placeholder (300x250)
-            html += `<div id="mobile-middle-ad-1" class="mobile-middle-ad" style="margin: 20px 0; padding: 8px; text-align: center; min-height: 300px; background: var(--bg-body); display: flex; align-items: center; justify-content: center; border-radius: 6px;">
-                        <span style="color: var(--text-muted); font-size: 0.8em;">Advertisement</span>
-                     </div>`;
-
             // Rest of the articles split into batches with ads interspersed
             const batchSize = 4;
             for (let i = 0; i < restBatch.length; i += batchSize) {
@@ -715,10 +710,8 @@ async function loadFeedArticles() {
                 
                 // Add ad after every 4 articles (except at the end)
                 if (i + batchSize < restBatch.length) {
-                    const adNum = Math.floor(i / batchSize) + 2;
-                    html += `<div id="mobile-middle-ad-${adNum}" class="mobile-middle-ad" style="margin: 20px 0; padding: 8px; text-align: center; min-height: 300px; background: var(--bg-body); display: flex; align-items: center; justify-content: center; border-radius: 6px;">
-                                <span style="color: var(--text-muted); font-size: 0.8em;">Advertisement</span>
-                             </div>`;
+                    const adNum = Math.floor(i / batchSize) + 1;
+                    html += `<div id="mobile-middle-ad-${adNum}" class="mobile-middle-ad" style="margin: 20px 0; padding: 8px; text-align: center; min-height: 300px; background: var(--bg-body); display: none; align-items: center; justify-content: center; border-radius: 6px; position: relative;"></div>`;
                 }
             }
 
@@ -740,9 +733,7 @@ async function loadFeedArticles() {
                 // Add ad after every 5 articles (except at the end)
                 if (i + batchSize < articles.length) {
                     const adNum = Math.floor(i / batchSize) + 1;
-                    html += `<div id="middle-feed-ad-${adNum}" class="middle-feed-ad" style="margin: 30px 0; padding: 8px; text-align: center; min-height: 280px; background: var(--bg-body); display: flex; align-items: center; justify-content: center; border-radius: 6px;">
-                                <span style="color: var(--text-muted); font-size: 0.8em;">Advertisement Space</span>
-                             </div>`;
+                    html += `<div id="middle-feed-ad-${adNum}" class="middle-feed-ad" style="margin: 30px 0; padding: 8px; text-align: center; min-height: 280px; background: var(--bg-body); display: none; align-items: center; justify-content: center; border-radius: 6px; position: relative;"></div>`;
                 }
             }
             
@@ -761,9 +752,7 @@ async function loadFeedArticles() {
                 
                 if (i + batchSize < articles.length) {
                     const adNum = Math.floor(i / batchSize) + 1;
-                    html += `<div id="middle-feed-ad-page${currentPage}-${adNum}" class="middle-feed-ad" style="margin: 30px 0; padding: 8px; text-align: center; min-height: 280px; background: var(--bg-body); display: flex; align-items: center; justify-content: center; border-radius: 6px;">
-                                <span style="color: var(--text-muted); font-size: 0.8em;">Advertisement Space</span>
-                             </div>`;
+                    html += `<div id="middle-feed-ad-page${currentPage}-${adNum}" class="middle-feed-ad" style="margin: 30px 0; padding: 8px; text-align: center; min-height: 280px; background: var(--bg-body); display: none; align-items: center; justify-content: center; border-radius: 6px; position: relative;"></div>`;
                 }
             }
             
@@ -937,7 +926,9 @@ async function loadMobileFeedAds() {
         document.querySelectorAll('[id^="mobile-middle-ad-"]').forEach((container, index) => {
             const ad = allAds[index % allAds.length];
             if (ad) {
+                container.style.display = 'flex'; // Show container only if ad exists
                 container.innerHTML = `
+                    <span style="position: absolute; top: 8px; left: 8px; background: var(--primary); color: white; padding: 2px 6px; font-size: 0.7em; font-weight: bold; border-radius: 3px;">AD</span>
                     <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; cursor: pointer;" onclick="trackAdClick('${ad.id}', '${ad.link_url}'); return false;">
                         ${renderAdCreative(ad, true)}
                         <button style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; padding: 0;" onclick="event.stopPropagation(); this.closest('[id^=mobile-middle-ad]').style.display='none';">×</button>
@@ -978,7 +969,9 @@ async function loadMiddleFeedAds() {
         document.querySelectorAll('[id^="middle-feed-ad"]').forEach((container, index) => {
             const ad = allAds[index % allAds.length];
             if (ad) {
+                container.style.display = 'flex'; // Show container only if ad exists
                 container.innerHTML = `
+                    <span style="position: absolute; top: 8px; left: 8px; background: var(--primary); color: white; padding: 2px 6px; font-size: 0.7em; font-weight: bold; border-radius: 3px;">AD</span>
                     <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; max-height: 350px; cursor: pointer; border-radius: 6px; overflow: hidden; background: var(--bg-body);" onclick="trackAdClick('${ad.id}', '${ad.link_url}'); return false;">
                         ${renderAdCreative(ad, false)}
                         <button style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; padding: 0; z-index: 10;" onclick="event.stopPropagation(); this.closest('[id^=middle-feed-ad]').style.display='none';">×</button>
@@ -1025,7 +1018,9 @@ async function loadMobileHomePageAds() {
         if (adBeforeTrending) {
             const container = document.getElementById('mobile-ad-before-trending');
             if (container) {
+                container.style.display = 'flex'; // Show container only if ad exists
                 container.innerHTML = `
+                    <span style="position: absolute; top: 8px; left: 8px; background: var(--primary); color: white; padding: 2px 6px; font-size: 0.7em; font-weight: bold; border-radius: 3px;">AD</span>
                     <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; cursor: pointer; border-radius: 6px; overflow: hidden;" onclick="trackAdClick('${adBeforeTrending.id}', '${adBeforeTrending.link_url}'); return false;">
                         ${renderAdCreative(adBeforeTrending, true)}
                         <button style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; padding: 0; z-index: 10;" onclick="event.stopPropagation(); document.getElementById('mobile-ad-before-trending').style.display='none';">×</button>
@@ -1040,7 +1035,9 @@ async function loadMobileHomePageAds() {
         if (adAfterHotNews) {
             const container = document.getElementById('mobile-ad-after-hotnews');
             if (container) {
+                container.style.display = 'flex'; // Show container only if ad exists
                 container.innerHTML = `
+                    <span style="position: absolute; top: 8px; left: 8px; background: var(--primary); color: white; padding: 2px 6px; font-size: 0.7em; font-weight: bold; border-radius: 3px;">AD</span>
                     <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; cursor: pointer; border-radius: 6px; overflow: hidden;" onclick="trackAdClick('${adAfterHotNews.id}', '${adAfterHotNews.link_url}'); return false;">
                         ${renderAdCreative(adAfterHotNews, true)}
                         <button style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; padding: 0; z-index: 10;" onclick="event.stopPropagation(); document.getElementById('mobile-ad-after-hotnews').style.display='none';">×</button>
@@ -1174,7 +1171,7 @@ async function loadTrending() {
         // STRICT check: must have value AND it must not be empty after trim
         if (!trendingSetting || !trendingSetting.value || !trendingSetting.value.trim()) {
             console.log('No trending articles configured - showing empty message');
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No trending articles configured. Go to admin settings to add trending articles by ID.</p>';
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No trending articles configured.</p>';
             return;
         }
         
@@ -1184,7 +1181,7 @@ async function loadTrending() {
         
         if (articleIds.length === 0) {
             console.log('No article IDs after parsing');
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No trending articles configured. Go to admin settings to add trending articles by ID.</p>';
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No trending articles configured.</p>';
             return;
         }
 
@@ -1433,7 +1430,7 @@ async function loadMobileTrendingFromSettings() {
 
         // If no trending setting, show message
         if (!trendingSetting || !trendingSetting.value || !trendingSetting.value.trim()) {
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">トレンドニュースが設定されていません</p>';
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">ट्रेन्डिङ समाचार सेट गरिएको छैन</p>';
             return;
         }
 

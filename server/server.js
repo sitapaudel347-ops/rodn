@@ -133,7 +133,7 @@ async function seedDefaultData() {
 
     // Create organization settings
     const settings = [
-        { key: 'org_name', value: 'Routine of Dhulikhel Banda', type: 'string' },
+        { key: 'org_name', value: 'Routine of Dhulikhel News', type: 'string' },
         { key: 'org_short_name', value: 'rodb', type: 'string' },
         { key: 'org_founded', value: '2022-07-15', type: 'date' },
         { key: 'org_address', value: 'Dhulikhel, Nepal', type: 'string' },
@@ -141,7 +141,7 @@ async function seedDefaultData() {
         { key: 'org_email', value: 'rodb.dhulikhel@gmail.com', type: 'string' },
         { key: 'org_tiktok', value: 'routineof.dhulikhelbanda', type: 'string' },
         { key: 'org_youtube', value: 'https://www.youtube.com/@RoutineOfDhulikhelBanda', type: 'string' },
-        { key: 'site_title', value: 'Routine of Dhulikhel Banda - Local News', type: 'string' },
+        { key: 'site_title', value: 'Routine of Dhulikhel News - Local News', type: 'string' },
         { key: 'site_description', value: 'A local yet authoritative Nepali news organization serving Dhulikhel and surrounding regions', type: 'string' },
         { key: 'maintenance_mode', value: 'false', type: 'boolean' },
         { key: 'allow_comments', value: 'true', type: 'boolean' },

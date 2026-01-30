@@ -1570,8 +1570,8 @@ body {
     .header-grid {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
-        padding: 12px 8px;
+        gap: 8px;
+        padding: 10px 8px;
         width: 100%;
     }
 
@@ -1593,7 +1593,7 @@ body {
         flex-direction: row;
         align-items: center;
         justify-content: flex-start;
-        gap: 8px;
+        gap: 4px;
         min-height: 44px;
         flex: 0 0 auto;
     }
@@ -1601,14 +1601,14 @@ body {
     .logo-area .logo-link {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 4px;
         flex: 0 0 auto;
         min-width: 0;
         overflow: hidden;
     }
 
     .logo-area img {
-        height: 40px;
+        height: 32px;
         width: auto;
         flex-shrink: 0;
     }
@@ -1619,11 +1619,12 @@ body {
     }
 
     .logo-text h1 {
-        font-size: 0.7rem;
+        font-size: 0.55rem;
         margin: 0;
         text-align: left;
         white-space: nowrap;
         word-break: normal;
+        line-height: 1.1;
     }
 
     #ad_header {

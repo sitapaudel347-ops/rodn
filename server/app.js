@@ -84,12 +84,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Session middleware for OAuth
 const session = require('express-session');
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'default-session-secret-change-this',
+    secret: process.env.SESSION_SECRET || 'default-session-secret-change-this-in-production',
     resave: false,
     saveUninitialized: false,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 // 24 hours
     }
 }));

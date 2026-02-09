@@ -2,10 +2,12 @@
   "version": 2,
   "env": {
     "NODE_ENV": "production",
-    "TURSO_CONNECTION_URL": "@turso_connection_url",
-    "TURSO_AUTH_TOKEN": "@turso_auth_token",
-    "JWT_SECRET": "@jwt_secret",
-    "JWT_REFRESH_SECRET": "@jwt_refresh_secret"
+    "TURSO_CONNECTION_URL": "@TURSO_CONNECTION_URL",
+    "TURSO_AUTH_TOKEN": "@TURSO_AUTH_TOKEN",
+    "JWT_SECRET": "@JWT_SECRET",
+    "JWT_REFRESH_SECRET": "@JWT_REFRESH_SECRET",
+    "SESSION_SECRET": "@SESSION_SECRET",
+    "ADMIN_SECRET": "@ADMIN_SECRET"
   },
   "buildCommand": "npm run build",
   "outputDirectory": ".",
@@ -18,10 +20,17 @@
   },
   "routes": [
     {
-      "src": "/public/(.*)",
+      "src": "/public/(.+)",
       "dest": "server/public/$1",
       "headers": {
         "cache-control": "public, max-age=3600, immutable"
+      }
+    },
+    {
+      "src": "/uploads/(.+)",
+      "dest": "server/uploads/$1",
+      "headers": {
+        "cache-control": "public, max-age=86400"
       }
     },
     {

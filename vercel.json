@@ -1,34 +1,64 @@
 {
   "version": 2,
-  "env": {
-    "NODE_ENV": "production"
-  },
   "buildCommand": "npm run build",
-  "outputDirectory": ".",
-  "public": false,
+  "env": {
+    "NODE_ENV": "production",
+    "TURSO_CONNECTION_URL": "@turso_connection_url",
+    "TURSO_AUTH_TOKEN": "@turso_auth_token",
+    "JWT_SECRET": "@jwt_secret",
+    "JWT_REFRESH_SECRET": "@jwt_refresh_secret",
+    "SESSION_SECRET": "@session_secret",
+    "ADMIN_SECRET": "@admin_secret"
+  },
   "functions": {
-    "api/index.js": {
-      "maxDuration": 60
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 60,
+      "runtime": "nodejs18.x"
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/public/(.+)",
-      "dest": "server/public/$1",
-      "headers": {
-        "cache-control": "public, max-age=3600, immutable"
-      }
+      "source": "/api/(.*)",
+      "destination": "/api"
     },
     {
-      "src": "/uploads/(.+)",
-      "dest": "server/uploads/$1",
-      "headers": {
-        "cache-control": "public, max-age=86400"
-      }
+      "source": "/public/(.*)",
+      "destination": "/public/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
     },
     {
-      "src": "/(.*)",
-      "dest": "api/index.js"
+      "source": "/public/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/publish-scheduled-articles",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-old-logs",
+      "schedule": "0 2 * * *"
     }
   ]
 }
